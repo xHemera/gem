@@ -1,12 +1,27 @@
 import { defineMiddleware } from 'astro:middleware';
-import { verifySession } from './lib/auth';
+import { verifyPassword } from './lib/auth';
+
+const PROTECTED_PATHS = ['/edit', '/api/pierres'];
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  if (context.url.pathname.startsWith('/edit')) {
-    const isAuth = verifySession(context.request.headers.get('cookie'));
-    if (!isAuth) {
-      return context.redirect('/login');
+  const isProtected = PROTECTED_PATHS.some((p) =>
+    context.url.pathname.startsWith(p),
+  );
+
+  if (!isProtected) return next();
+
+  const auth = context.request.headers.get('authorization');
+
+  if (auth?.startsWith('Basic ')) {
+    const decoded = atob(auth.slice(6));
+    const [, password] = decoded.split(':');
+    if (password && verifyPassword(password)) {
+      return next();
     }
   }
-  return next();
+
+  return new Response('Unauthorized', {
+    status: 401,
+    headers: { 'WWW-Authenticate': 'Basic realm="Gem"' },
+  });
 });

@@ -1,14 +1,8 @@
 import type { APIRoute } from 'astro';
-import { verifySession } from '../../lib/auth';
 import { commitFiles, readFileContent } from '../../lib/github';
 import { dump } from 'js-yaml';
 
 export const POST: APIRoute = async ({ request }) => {
-  const isAuth = verifySession(request.headers.get('cookie'));
-  if (!isAuth) {
-    return new Response('Non autorisé', { status: 401 });
-  }
-
   const formData = await request.formData();
   const nom = formData.get('nom') as string | null;
   const origine = formData.get('origine') as string | null;
