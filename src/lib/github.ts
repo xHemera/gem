@@ -1,11 +1,19 @@
 import { Octokit } from '@octokit/rest';
 
+function getEnv(name: string): string | undefined {
+  return (
+    // @ts-ignore – import.meta.env in Astro SSR
+    (typeof import.meta !== 'undefined' && import.meta.env?.[name]) ??
+    process.env?.[name]
+  );
+}
+
 function getClient(): Octokit {
-  return new Octokit({ auth: import.meta.env.GITHUB_TOKEN });
+  return new Octokit({ auth: getEnv('GITHUB_TOKEN') });
 }
 
 function getRepo(): { owner: string; repo: string } {
-  const full = import.meta.env.GITHUB_REPO;
+  const full = getEnv('GITHUB_REPO') ?? '';
   const [owner, repo] = full.split('/');
   return { owner, repo };
 }

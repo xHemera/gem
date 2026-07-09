@@ -3,8 +3,17 @@ import { timingSafeEqual, scryptSync, randomBytes, createHmac } from 'node:crypt
 const SESSION_COOKIE = 'gem_session';
 const COOKIE_MAX_AGE = 60 * 60 * 24;
 
+function getEnv(name: string): string | undefined {
+  return (
+    // @ts-ignore – import.meta.env in Astro SSR
+    (typeof import.meta !== 'undefined' && import.meta.env?.[name]) ??
+    process.env?.[name]
+  );
+}
+
 function getSigningKey(): string {
-  return import.meta.env.EDIT_PASSWORD_HASH?.slice(0, 32) ?? 'dev-secret-key-1234567890abcdef';
+  const hash = getEnv('EDIT_PASSWORD_HASH');
+  return hash?.slice(0, 32) ?? 'dev-secret-key-1234567890abcdef';
 }
 
 function sign(value: string): string {
@@ -41,7 +50,7 @@ export function verifySession(cookieHeader: string | null): boolean {
 }
 
 export function verifyPassword(password: string): boolean {
-  const hash = import.meta.env.EDIT_PASSWORD_HASH;
+  const hash = getEnv('EDIT_PASSWORD_HASH');
   if (!hash) return false;
   const [salt, key] = hash.split(':');
   if (!salt || !key) return false;
