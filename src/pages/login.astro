@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const error = Astro.url.searchParams.get('error');
+---
+
+<BaseLayout>
+  <div class="flex min-h-[60vh] items-center justify-center">
+    <form action="/api/auth/login" method="POST" class="w-full max-w-sm rounded-xl border border-border bg-surface p-6">
+      <h1 class="mb-6 text-xl font-bold">Connexion</h1>
+      {error && (
+        <p class="mb-4 rounded-lg bg-red-900/50 px-4 py-2 text-sm text-red-300">
+          Mot de passe incorrect
+        </p>
+      )}
+      <div class="mb-4">
+        <label for="password" class="mb-2 block text-sm text-text-secondary">Mot de passe</label>
+        <input
+          type="password"
+          name="password"
+          id="password"
+          required
+          class="w-full rounded-lg border border-border bg-background px-4 py-2 text-text-primary outline-none transition-colors focus:border-accent"
+        />
+      </div>
+      <button
+        type="submit"
+        class="w-full rounded-lg bg-accent px-4 py-2 font-medium text-white transition-opacity hover:opacity-90"
+      >
+        Se connecter
+      </button>
+    </form>
+  </div>
+</BaseLayout>
