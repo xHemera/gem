@@ -18,10 +18,7 @@ export default function PierreGrid({ pierres }: Props) {
         ))}
       </div>
       {selected && (
-        <PhotoCarousel
-          pierre={selected}
-          onClose={() => setSelected(null)}
-        />
+        <PhotoCarousel pierre={selected} onClose={() => setSelected(null)} />
       )}
     </>
   );

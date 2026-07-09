@@ -3,24 +3,18 @@ const path = Astro.url.pathname;
 const isEdit = path.startsWith('/edit');
 ---
 
-<header class="border-b border-border">
-  <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-    <a href="/" class="text-lg font-semibold tracking-wide uppercase">
+<div class="navbar bg-base-200 border-b border-neutral">
+  <div class="flex-1">
+    <a href="/" class="btn btn-ghost text-xl font-semibold tracking-wide uppercase">
       Gem
     </a>
-    <nav class="flex gap-4 text-sm">
-      <a
-        href="/"
-        class={isEdit ? 'text-text-secondary hover:text-text-primary transition-colors' : 'text-accent font-medium'}
-      >
-        Accueil
-      </a>
-      <a
-        href="/edit"
-        class={isEdit ? 'text-accent font-medium' : 'text-text-secondary hover:text-text-primary transition-colors'}
-      >
-        Éditer
-      </a>
-    </nav>
   </div>
-</header>
+  <div class="flex-none gap-2">
+    <a href="/" class={`btn btn-sm ${isEdit ? 'btn-ghost' : 'btn-primary'}`}>
+      Accueil
+    </a>
+    <a href="/edit" class={`btn btn-sm ${isEdit ? 'btn-primary' : 'btn-ghost'}`}>
+      Éditer
+    </a>
+  </div>
+</div>

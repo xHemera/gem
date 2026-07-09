@@ -14,7 +14,7 @@ const editingPierre = id ? getPierre(id) : undefined;
 <BaseLayout>
   {editingPierre ? (
     <>
-      <a href="/edit" class="mb-6 block text-sm text-text-secondary hover:text-text-primary transition-colors">
+      <a href="/edit" class="btn btn-ghost mb-6">
         ← Retour à la liste
       </a>
       <h1 class="mb-8 text-2xl font-bold">Modifier : {editingPierre.nom}</h1>

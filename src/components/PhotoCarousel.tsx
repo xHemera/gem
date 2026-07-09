@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
 import type { Pierre } from '../lib/pierres';
 
 interface Props {
@@ -9,88 +9,68 @@ interface Props {
 export default function PhotoCarousel({ pierre, onClose }: Props) {
   const photos = pierre.photos ?? [];
   const [index, setIndex] = useState(0);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   const prev = useCallback(() => setIndex((i) => (i > 0 ? i - 1 : photos.length - 1)), [photos.length]);
   const next = useCallback(() => setIndex((i) => (i < photos.length - 1 ? i + 1 : 0)), [photos.length]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
       if (e.key === 'ArrowLeft') prev();
       if (e.key === 'ArrowRight') next();
     },
-    [onClose, prev, next]
+    [prev, next]
   );
 
   useEffect(() => {
+    dialogRef.current?.showModal();
     document.addEventListener('keydown', handleKeyDown);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
-    };
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
   return (
-    <div
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-      onClick={onClose}
-    >
-      <div
-        class="relative flex max-h-[90vh] max-w-4xl flex-col items-center gap-4"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <dialog ref={dialogRef} class="modal" onClose={onClose}>
+      <div class="modal-box max-w-3xl p-6">
         {photos.length > 0 ? (
-          <>
-            <div class="relative flex items-center gap-4">
-              {photos.length > 1 && (
-                <button
-                  onClick={prev}
-                  class="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface text-white transition-colors hover:bg-surface-hover"
-                  aria-label="Précédent"
-                >
-                  ←
-                </button>
-              )}
-              <div class="overflow-hidden rounded-xl">
-                <img
-                  src={`/images/pierres/${pierre.id}/${photos[index]}`}
-                  alt={`${pierre.nom} - ${index + 1}`}
-                  class="max-h-[70vh] w-auto rounded-xl object-contain"
-                />
-              </div>
-              {photos.length > 1 && (
-                <button
-                  onClick={next}
-                  class="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface text-white transition-colors hover:bg-surface-hover"
-                  aria-label="Suivant"
-                >
-                  →
-                </button>
-              )}
+          <div class="flex flex-col items-center gap-4">
+            <div class="carousel w-full rounded-box">
+              {photos.map((photo, i) => (
+                <div key={i} class={`carousel-item w-full ${i === index ? '' : 'hidden'}`}>
+                  <img
+                    src={`/images/pierres/${pierre.id}/${photo}`}
+                    alt={`${pierre.nom} - ${i + 1}`}
+                    class="w-full max-h-[60vh] object-contain"
+                  />
+                </div>
+              ))}
             </div>
             {photos.length > 1 && (
-              <p class="text-sm text-text-secondary">
-                {index + 1} / {photos.length}
-              </p>
+              <div class="flex items-center gap-4">
+                <button onClick={prev} class="btn btn-circle btn-ghost btn-sm">←</button>
+                <span class="text-sm text-base-content/60">{index + 1} / {photos.length}</span>
+                <button onClick={next} class="btn btn-circle btn-ghost btn-sm">→</button>
+              </div>
             )}
-          </>
+          </div>
         ) : (
-          <p class="text-text-secondary">Aucune photo</p>
+          <p class="text-center text-base-content/60">Aucune photo</p>
         )}
 
-        <div class="text-center">
-          <h2 class="text-xl font-semibold">{pierre.nom}</h2>
+        <div class="mt-6 text-center">
+          <h2 class="text-xl font-bold">{pierre.nom}</h2>
           {pierre.origine && (
-            <p class="mt-1 text-sm text-text-secondary">{pierre.origine}</p>
+            <p class="mt-1 text-sm text-base-content/60">{pierre.origine}</p>
           )}
           {pierre.description && (
-            <p class="mt-2 max-w-md text-sm leading-relaxed text-text-secondary">
+            <p class="mt-3 max-w-md mx-auto text-sm leading-relaxed text-base-content/70">
               {pierre.description}
             </p>
           )}
         </div>
       </div>
-    </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>fermer</button>
+      </form>
+    </dialog>
   );
 }

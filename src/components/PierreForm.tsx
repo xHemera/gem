@@ -71,70 +71,63 @@ export default function PierreForm({ initialData }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} class="mx-auto max-w-lg space-y-6">
-      <div>
-        <label for="nom" class="mb-2 block text-sm text-text-secondary">
-          Nom *
-        </label>
+    <form onSubmit={handleSubmit} class="mx-auto max-w-lg space-y-5">
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">Nom *</legend>
         <input
-          id="nom"
           type="text"
           value={nom}
           onChange={(e) => setNom(e.target.value)}
           required
-          class="w-full rounded-lg border border-border bg-background px-4 py-2 text-text-primary outline-none transition-colors focus:border-accent"
+          class="input w-full"
+          placeholder="Ex: Rubis"
         />
-      </div>
+      </fieldset>
 
-      <div>
-        <label for="origine" class="mb-2 block text-sm text-text-secondary">
-          Origine
-        </label>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">Origine</legend>
         <input
-          id="origine"
           type="text"
           value={origine}
           onChange={(e) => setOrigine(e.target.value)}
-          class="w-full rounded-lg border border-border bg-background px-4 py-2 text-text-primary outline-none transition-colors focus:border-accent"
+          class="input w-full"
+          placeholder="Ex: Birmanie"
         />
-      </div>
+      </fieldset>
 
-      <div>
-        <label for="description" class="mb-2 block text-sm text-text-secondary">
-          Description
-        </label>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">Description</legend>
         <textarea
-          id="description"
           rows={4}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          class="w-full rounded-lg border border-border bg-background px-4 py-2 text-text-primary outline-none transition-colors focus:border-accent resize-y"
+          class="textarea w-full"
+          placeholder="Description de la pierre…"
         />
-      </div>
+      </fieldset>
 
-      <div>
-        <label class="mb-2 block text-sm text-text-secondary">Photos</label>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">Photos</legend>
         <input
           ref={fileInputRef}
           type="file"
           accept="image/*"
           multiple
           onChange={handleFileChange}
-          class="w-full text-sm text-text-secondary file:mr-3 file:rounded-lg file:border-0 file:bg-surface file:px-4 file:py-2 file:text-sm file:text-text-primary file:cursor-pointer hover:file:bg-surface-hover"
+          class="file-input w-full"
         />
 
         {existingPhotos.length > 0 && (
           <div class="mt-3">
-            <p class="mb-2 text-xs text-text-secondary">Photos existantes :</p>
+            <p class="mb-2 text-xs text-base-content/50">Photos existantes :</p>
             <div class="flex flex-wrap gap-2">
               {existingPhotos.map((photo, i) => (
-                <div key={i} class="relative">
-                  <img
-                    src={`/images/pierres/${initialData?.id}/${photo}`}
-                    alt=""
-                    class="size-20 rounded-lg object-cover"
-                  />
-                </div>
+                <img
+                  key={i}
+                  src={`/images/pierres/${initialData?.id}/${photo}`}
+                  alt=""
+                  class="size-20 rounded-box object-cover"
+                />
               ))}
             </div>
           </div>
@@ -142,15 +135,15 @@ export default function PierreForm({ initialData }: Props) {
 
         {photos.length > 0 && (
           <div class="mt-3">
-            <p class="mb-2 text-xs text-text-secondary">Nouvelles photos :</p>
+            <p class="mb-2 text-xs text-base-content/50">Nouvelles photos :</p>
             <div class="flex flex-wrap gap-2">
               {photos.map((p, i) => (
                 <div key={i} class="relative">
-                  <img src={p.url} alt="" class="size-20 rounded-lg object-cover" />
+                  <img src={p.url} alt="" class="size-20 rounded-box object-cover" />
                   <button
                     type="button"
                     onClick={() => removePhoto(i)}
-                    class="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-red-500 text-xs text-white"
+                    class="btn btn-circle btn-xs btn-error absolute -top-1 -right-1 text-white"
                   >
                     ×
                   </button>
@@ -159,14 +152,20 @@ export default function PierreForm({ initialData }: Props) {
             </div>
           </div>
         )}
-      </div>
+      </fieldset>
 
       <button
         type="submit"
         disabled={submitting}
-        class="w-full rounded-lg bg-accent px-4 py-2 font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+        class="btn btn-primary btn-block"
       >
-        {submitting ? 'Enregistrement…' : initialData?.id ? 'Enregistrer' : 'Créer'}
+        {submitting ? (
+          <span class="loading loading-spinner"></span>
+        ) : initialData?.id ? (
+          'Enregistrer'
+        ) : (
+          'Créer'
+        )}
       </button>
     </form>
   );
