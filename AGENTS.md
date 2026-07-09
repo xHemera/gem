@@ -13,9 +13,9 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 - `src/data/pierres/*.yml` — source de vérité des pierres
 - `public/images/pierres/{id}/` — photos des pierres
 - `src/lib/pierres.ts` — loader YML vers TypeScript
-- `src/lib/auth.ts` — authentification (mot de passe hashé + session cookie)
+- `src/lib/auth.ts` — hash et vérification du mot de passe
 - `src/lib/github.ts` — Octokit pour commit YML + images
-- `src/middleware.ts` — protège les routes `/edit/*`
+- `src/middleware.ts` — HTTP Basic Auth : protège `/edit/*` et `/api/pierres`
 
 ## Environnement
 
@@ -27,6 +27,8 @@ EDIT_PASSWORD_HASH=salt:hash
 GITHUB_TOKEN=ghp_...
 GITHUB_REPO=xHemera/gem
 ```
+
+Le username est ignoré — seul le mot de passe compte. La boîte de dialogue du navigateur s'affiche automatiquement.
 
 ## Documentation
 
