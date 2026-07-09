@@ -4,12 +4,14 @@ import type { Pierre } from '../lib/pierres';
 interface Props {
   pierre: Pierre;
   onClose: () => void;
+  photoBaseUrl?: string;
 }
 
-export default function PhotoCarousel({ pierre, onClose }: Props) {
+export default function PhotoCarousel({ pierre, onClose, photoBaseUrl }: Props) {
   const photos = pierre.photos ?? [];
   const [index, setIndex] = useState(0);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const baseUrl = photoBaseUrl ?? `/images/pierres/${pierre.id}`;
 
   const prev = useCallback(() => setIndex((i) => (i > 0 ? i - 1 : photos.length - 1)), [photos.length]);
   const next = useCallback(() => setIndex((i) => (i < photos.length - 1 ? i + 1 : 0)), [photos.length]);
@@ -19,7 +21,7 @@ export default function PhotoCarousel({ pierre, onClose }: Props) {
       if (e.key === 'ArrowLeft') prev();
       if (e.key === 'ArrowRight') next();
     },
-    [prev, next]
+    [prev, next],
   );
 
   useEffect(() => {
@@ -37,7 +39,7 @@ export default function PhotoCarousel({ pierre, onClose }: Props) {
               {photos.map((photo, i) => (
                 <div key={i} class={`carousel-item w-full ${i === index ? '' : 'hidden'}`}>
                   <img
-                    src={`/images/pierres/${pierre.id}/${photo}`}
+                    src={`${baseUrl}/${photo}`}
                     alt={`${pierre.nom} - ${i + 1}`}
                     class="w-full max-h-[60vh] object-contain"
                   />

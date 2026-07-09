@@ -1,32 +1,14 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import EditList from '../../components/EditList';
-import PierreForm from '../../components/PierreForm';
-import { getPierre, getAllPierres } from '../../lib/pierres';
+import { getAllPierres } from '../../lib/pierres';
 
 export const prerender = false;
 
-const id = Astro.params.id;
 const pierres = getAllPierres();
-const editingPierre = id ? getPierre(id) : undefined;
 ---
 
 <BaseLayout>
-  {editingPierre ? (
-    <>
-      <a href="/edit" class="btn btn-ghost mb-6">
-        ← Retour à la liste
-      </a>
-      <h1 class="mb-8 text-2xl font-bold">Modifier : {editingPierre.nom}</h1>
-      <PierreForm
-        client:load
-        initialData={{ id: editingPierre.id, nom: editingPierre.nom, origine: editingPierre.origine, description: editingPierre.description, photos: editingPierre.photos }}
-      />
-    </>
-  ) : (
-    <>
-      <h1 class="mb-8 text-2xl font-bold">Gérer les pierres</h1>
-      <EditList client:load pierres={pierres} />
-    </>
-  )}
+  <h1 class="mb-8 text-2xl font-bold">Gérer les pierres</h1>
+  <EditList client:load pierres={pierres} />
 </BaseLayout>

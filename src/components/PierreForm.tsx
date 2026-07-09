@@ -7,34 +7,35 @@ interface PhotoPreview {
 
 interface Props {
   initialData?: {
+    localId?: string;
     id?: string;
     nom?: string;
     origine?: string;
     description?: string;
     photos?: string[];
+    newPhotoNames?: string[];
   };
+  onSaved?: () => void;
 }
 
-export default function PierreForm({ initialData }: Props) {
+export default function PierreForm({ initialData, onSaved }: Props) {
   const [nom, setNom] = useState(initialData?.nom ?? '');
   const [origine, setOrigine] = useState(initialData?.origine ?? '');
   const [description, setDescription] = useState(initialData?.description ?? '');
-  const [photos, setPhotos] = useState<PhotoPreview[]>([]);
-  const [existingPhotos] = useState<string[]>(initialData?.photos ?? []);
+  const [committedPhotos, setCommittedPhotos] = useState<string[]>(initialData?.photos ?? []);
+  const [draftPhotos, setDraftPhotos] = useState<string[]>(initialData?.newPhotoNames ?? []);
+  const [newPhotoPreviews, setNewPhotoPreviews] = useState<PhotoPreview[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
-    const previews = files.map((file) => ({
-      file,
-      url: URL.createObjectURL(file),
-    }));
-    setPhotos((prev) => [...prev, ...previews]);
+    const previews = files.map((file) => ({ file, url: URL.createObjectURL(file) }));
+    setNewPhotoPreviews((prev) => [...prev, ...previews]);
   }
 
-  function removePhoto(index: number) {
-    setPhotos((prev) => {
+  function removeNewPhoto(index: number) {
+    setNewPhotoPreviews((prev) => {
       const updated = [...prev];
       URL.revokeObjectURL(updated[index].url);
       updated.splice(index, 1);
@@ -51,14 +52,18 @@ export default function PierreForm({ initialData }: Props) {
     formData.append('nom', nom.trim());
     if (origine.trim()) formData.append('origine', origine.trim());
     if (description.trim()) formData.append('description', description.trim());
+
+    committedPhotos.forEach((name) => formData.append('committedPhotos', name));
+    draftPhotos.forEach((name) => formData.append('draftPhotos', name));
+    newPhotoPreviews.forEach((p) => formData.append('photos', p.file));
+
+    if (initialData?.localId) formData.append('localId', initialData.localId);
     if (initialData?.id) formData.append('id', initialData.id);
-    photos.forEach((p) => formData.append('photos', p.file));
-    existingPhotos.forEach((name) => formData.append('existingPhotos', name));
 
     try {
       const res = await fetch('/api/pierres', { method: 'POST', body: formData });
       if (res.ok) {
-        window.location.href = '/';
+        onSaved?.();
       } else {
         const err = await res.text();
         alert(`Erreur : ${err}`);
@@ -117,54 +122,61 @@ export default function PierreForm({ initialData }: Props) {
           class="file-input w-full"
         />
 
-        {existingPhotos.length > 0 && (
-          <div class="mt-3">
-            <p class="mb-2 text-xs text-base-content/50">Photos existantes :</p>
-            <div class="flex flex-wrap gap-2">
-              {existingPhotos.map((photo, i) => (
-                <img
-                  key={i}
-                  src={`/images/pierres/${initialData?.id}/${photo}`}
-                  alt=""
-                  class="size-20 rounded-box object-cover"
-                />
-              ))}
+        <div class="flex flex-wrap gap-2 mt-3">
+          {committedPhotos.map((name) => (
+            <div key={name} class="relative group">
+              <img
+                src={`/images/pierres/${initialData?.id}/${name}`}
+                alt=""
+                class="size-20 rounded-box object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => setCommittedPhotos((prev) => prev.filter((p) => p !== name))}
+                class="btn btn-circle btn-xs btn-error absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                ×
+              </button>
             </div>
-          </div>
-        )}
-
-        {photos.length > 0 && (
-          <div class="mt-3">
-            <p class="mb-2 text-xs text-base-content/50">Nouvelles photos :</p>
-            <div class="flex flex-wrap gap-2">
-              {photos.map((p, i) => (
-                <div key={i} class="relative">
-                  <img src={p.url} alt="" class="size-20 rounded-box object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => removePhoto(i)}
-                    class="btn btn-circle btn-xs btn-error absolute -top-1 -right-1 text-white"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+          ))}
+          {draftPhotos.map((name, i) => (
+            <div key={name} class="relative group">
+              <img
+                src={`/api/drafts/${initialData?.localId}/photos/${name}`}
+                alt=""
+                class="size-20 rounded-box object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => setDraftPhotos((prev) => prev.filter((_, idx) => idx !== i))}
+                class="btn btn-circle btn-xs btn-error absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                ×
+              </button>
             </div>
-          </div>
-        )}
+          ))}
+          {newPhotoPreviews.map((p, i) => (
+            <div key={i} class="relative group">
+              <img src={p.url} alt="" class="size-20 rounded-box object-cover" />
+              <button
+                type="button"
+                onClick={() => removeNewPhoto(i)}
+                class="btn btn-circle btn-xs btn-error absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
       </fieldset>
 
-      <button
-        type="submit"
-        disabled={submitting}
-        class="btn btn-primary btn-block"
-      >
+      <button type="submit" disabled={submitting} class="btn btn-primary btn-block">
         {submitting ? (
           <span class="loading loading-spinner"></span>
-        ) : initialData?.id ? (
-          'Enregistrer'
+        ) : initialData?.id || initialData?.localId ? (
+          'Enregistrer le brouillon'
         ) : (
-          'Créer'
+          'Créer le brouillon'
         )}
       </button>
     </form>
