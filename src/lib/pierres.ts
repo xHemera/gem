@@ -32,3 +32,10 @@ export function getPierre(id: string): Pierre | undefined {
   const data = load(raw) as Record<string, unknown>;
   return { id, ...data } as Pierre;
 }
+
+export function getVersion(): number {
+  const p = path.resolve('src/data/version.json');
+  if (!fs.existsSync(p)) return 0;
+  const raw = fs.readFileSync(p, 'utf-8');
+  return JSON.parse(raw).version;
+}

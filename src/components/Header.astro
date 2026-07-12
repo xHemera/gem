@@ -1,12 +1,15 @@
 ---
+import { getVersion } from '../lib/pierres';
 const path = Astro.url.pathname;
 const isEdit = path.startsWith('/edit');
+const version = getVersion();
 ---
 
 <div class="navbar bg-base-200 border-b border-neutral">
   <div class="flex-1">
     <a href="/" class="btn btn-ghost text-xl font-semibold tracking-wide uppercase">
       Gem
+      <span class="text-xs font-normal text-base-content/40 ml-1">v{version}</span>
     </a>
   </div>
   <div class="flex-none gap-2">

@@ -12,7 +12,7 @@ function getRepo(): { owner: string; repo: string } {
 
 interface FileToCommit {
   path: string;
-  content: string;
+  content?: string;
 }
 
 export async function commitFiles(
@@ -36,6 +36,14 @@ export async function commitFiles(
 
   const treeItems = await Promise.all(
     files.map(async (file) => {
+      if (file.content === undefined) {
+        return {
+          path: file.path,
+          mode: '100644' as const,
+          type: 'blob' as const,
+          sha: null as unknown as string,
+        };
+      }
       const { data: blob } = await octokit.git.createBlob({
         owner,
         repo,
@@ -72,6 +80,20 @@ export async function commitFiles(
     ref: 'heads/main',
     sha: newCommit.sha,
   });
+}
+
+export async function getFileContent(path: string): Promise<string | null> {
+  const octokit = getClient();
+  const { owner, repo } = getRepo();
+  try {
+    const { data } = await octokit.repos.getContent({ owner, repo, path });
+    if ('content' in data) {
+      return Buffer.from(data.content, 'base64').toString('utf-8');
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 export function readFileContent(

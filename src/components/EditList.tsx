@@ -4,7 +4,7 @@ import PierreForm from './PierreForm';
 
 interface DraftData {
   localId: string;
-  type: 'create' | 'edit';
+  type: 'create' | 'edit' | 'delete';
   nom: string;
   origine?: string;
   description?: string;
@@ -39,6 +39,20 @@ export default function EditList({ pierres }: Props) {
   async function handleDeleteDraft(localId: string) {
     if (!confirm('Supprimer ce brouillon ?')) return;
     await fetch(`/api/drafts/${localId}`, { method: 'DELETE' });
+    setRefreshKey((k) => k + 1);
+  }
+
+  async function handleDeleteStone(pierre: Pierre) {
+    if (!confirm(`Supprimer la pierre « ${pierre.nom} » définitivement au prochain push ?`)) return;
+    const res = await fetch('/api/pierres/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: pierre.id, nom: pierre.nom, photos: pierre.photos ?? [] }),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      alert(`Erreur : ${err}`);
+    }
     setRefreshKey((k) => k + 1);
   }
 
@@ -180,8 +194,8 @@ export default function EditList({ pierres }: Props) {
             {filteredDrafts.map((d) => (
               <div
                 key={d.localId}
-                class="card card-border bg-base-100 relative group cursor-pointer"
-                onClick={() => { setSelectedDraft(d); setView('edit-draft'); }}
+                class={`card card-border bg-base-100 relative group ${d.type === 'delete' ? 'opacity-60' : 'cursor-pointer'}`}
+                onClick={() => d.type !== 'delete' && (setSelectedDraft(d), setView('edit-draft'))}
               >
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDeleteDraft(d.localId); }}
@@ -189,7 +203,11 @@ export default function EditList({ pierres }: Props) {
                 >
                   ×
                 </button>
-                {d.newPhotoNames[0] ? (
+                {d.type === 'delete' ? (
+                  <figure class="flex aspect-[4/3] items-center justify-center bg-error/10">
+                    <span class="text-4xl">🗑</span>
+                  </figure>
+                ) : d.newPhotoNames[0] ? (
                   <figure class="aspect-[4/3] overflow-hidden">
                     <img
                       src={`/api/drafts/${d.localId}/photos/${d.newPhotoNames[0]}`}
@@ -207,7 +225,9 @@ export default function EditList({ pierres }: Props) {
                 <div class="card-body gap-1 p-4">
                   <div class="flex items-center gap-2">
                     <h2 class="card-title text-base">{d.nom}</h2>
-                    <span class="badge badge-warning badge-xs">Brouillon</span>
+                    <span class={`badge badge-xs ${d.type === 'delete' ? 'badge-error' : 'badge-warning'}`}>
+                      {d.type === 'delete' ? 'Suppression' : 'Brouillon'}
+                    </span>
                   </div>
                   {d.origine && <p class="text-xs text-base-content/60">{d.origine}</p>}
                 </div>
@@ -232,9 +252,16 @@ export default function EditList({ pierres }: Props) {
             {filteredCommitted.map((p) => (
               <div
                 key={p.id}
-                class="card card-border bg-base-100 cursor-pointer text-left hover:shadow-xl transition-shadow"
+                class="card card-border bg-base-100 cursor-pointer text-left hover:shadow-xl transition-shadow relative group"
                 onClick={() => { setSelectedStone(p); setView('edit-stone'); }}
               >
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleDeleteStone(p); }}
+                  class="btn btn-circle btn-xs btn-error absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Supprimer cette pierre"
+                >
+                  ×
+                </button>
                 {p.photos?.[0] ? (
                   <figure class="aspect-[4/3] overflow-hidden">
                     <img

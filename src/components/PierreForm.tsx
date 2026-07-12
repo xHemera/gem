@@ -160,6 +160,7 @@ export default function PierreForm({ initialData, onSaved }: Props) {
           ref={fileInputRef}
           type="file"
           accept="image/*"
+          capture="environment"
           multiple
           onChange={handleFileChange}
           class="file-input w-full"

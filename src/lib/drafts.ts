@@ -3,7 +3,7 @@ import { join } from 'path';
 
 export interface Draft {
   localId: string;
-  type: 'create' | 'edit';
+  type: 'create' | 'edit' | 'delete';
   nom: string;
   origine?: string;
   description?: string;
