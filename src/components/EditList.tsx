@@ -31,9 +31,12 @@ export default function EditList({ pierres }: Props) {
 
   useEffect(() => {
     fetch('/api/drafts')
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then(setDrafts)
-      .catch(() => {});
+      .catch((e) => console.error('Erreur chargement brouillons:', e));
   }, [refreshKey]);
 
   async function handleDeleteDraft(localId: string) {
@@ -51,6 +54,20 @@ export default function EditList({ pierres }: Props) {
         body: JSON.stringify({ id: pierre.id, nom: pierre.nom, photos: pierre.photos ?? [] }),
       });
       if (res.ok) {
+        const { localId } = await res.json();
+        setDrafts((prev) => [
+          ...prev,
+          {
+            localId,
+            type: 'delete',
+            nom: pierre.nom,
+            origine: undefined,
+            description: undefined,
+            existingPhotoNames: pierre.photos ?? [],
+            newPhotoNames: [],
+            existingStoneId: pierre.id,
+          },
+        ]);
         setPushMsg(`Brouillon de suppression créé pour « ${pierre.nom} »`);
         setTimeout(() => setPushMsg(null), 4000);
       } else {
@@ -60,7 +77,6 @@ export default function EditList({ pierres }: Props) {
     } catch {
       alert('Erreur réseau');
     }
-    setRefreshKey((k) => k + 1);
   }
 
   async function handlePush() {
