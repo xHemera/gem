@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { dump } from 'js-yaml';
 import { getDraftStore, slugify } from '../../../lib/drafts';
-import { commitFiles, readFileContent } from '../../../lib/github';
+import { commitFiles, readFileContent, getFileContent } from '../../../lib/github';
 
 export const POST: APIRoute = async () => {
   const store = await getDraftStore();
@@ -11,10 +11,25 @@ export const POST: APIRoute = async () => {
     return new Response('Aucun brouillon', { status: 400 });
   }
 
-  const files: { path: string; content: string }[] = [];
+  const files: { path: string; content?: string }[] = [];
   const usedIds = new Set<string>();
+  const names: string[] = [];
 
   for (const draft of drafts) {
+    if (draft.type === 'delete') {
+      const stoneId = draft.existingStoneId;
+      if (!stoneId) continue;
+      usedIds.add(stoneId);
+      names.push(`Suppression: ${draft.nom}`);
+
+      files.push({ path: `src/data/pierres/${stoneId}.yml` });
+
+      for (const photo of draft.existingPhotoNames) {
+        files.push({ path: `public/images/pierres/${stoneId}/${photo}` });
+      }
+      continue;
+    }
+
     const stoneId = draft.existingStoneId ?? slugify(draft.nom);
     let finalId = stoneId;
     let counter = 1;
@@ -23,6 +38,7 @@ export const POST: APIRoute = async () => {
       counter++;
     }
     usedIds.add(finalId);
+    names.push(draft.nom);
 
     const allPhotos = [...draft.existingPhotoNames, ...draft.newPhotoNames];
 
@@ -50,8 +66,17 @@ export const POST: APIRoute = async () => {
     }
   }
 
-  const names = drafts.map((d) => d.nom).join(', ');
-  await commitFiles(files, `Mise à jour : ${names}`);
+  // Auto-versioning
+  const versionRaw = await getFileContent('src/data/version.json');
+  const currentVersion = versionRaw ? JSON.parse(versionRaw).version : 0;
+  const nextVersion = currentVersion + 1;
+  files.push({
+    path: 'src/data/version.json',
+    content: Buffer.from(JSON.stringify({ version: nextVersion })).toString('base64'),
+  });
+
+  const message = `Mise à jour : ${names.join(', ')} (v${nextVersion})`;
+  await commitFiles(files, message);
 
   await store.clear();
 
