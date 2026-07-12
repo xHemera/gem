@@ -132,9 +132,11 @@ let _instance: DraftStore | null = null;
 
 export async function getDraftStore(): Promise<DraftStore> {
   if (!_instance) {
-    _instance = process.env.NETLIFY
-      ? await createNetlifyStore()
-      : createLocalStore();
+    try {
+      _instance = await createNetlifyStore();
+    } catch {
+      _instance = createLocalStore();
+    }
   }
   return _instance;
 }
