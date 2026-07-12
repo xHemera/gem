@@ -44,14 +44,21 @@ export default function EditList({ pierres }: Props) {
 
   async function handleDeleteStone(pierre: Pierre) {
     if (!confirm(`Supprimer la pierre « ${pierre.nom} » définitivement au prochain push ?`)) return;
-    const res = await fetch('/api/pierres/delete', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: pierre.id, nom: pierre.nom, photos: pierre.photos ?? [] }),
-    });
-    if (!res.ok) {
-      const err = await res.text();
-      alert(`Erreur : ${err}`);
+    try {
+      const res = await fetch('/api/pierres/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: pierre.id, nom: pierre.nom, photos: pierre.photos ?? [] }),
+      });
+      if (res.ok) {
+        setPushMsg(`Brouillon de suppression créé pour « ${pierre.nom} »`);
+        setTimeout(() => setPushMsg(null), 4000);
+      } else {
+        const err = await res.text();
+        alert(`Erreur : ${err}`);
+      }
+    } catch {
+      alert('Erreur réseau');
     }
     setRefreshKey((k) => k + 1);
   }
