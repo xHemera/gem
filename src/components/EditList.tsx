@@ -201,7 +201,7 @@ export default function EditList({ pierres }: Props) {
             {filteredDrafts.map((d) => (
               <div
                 key={d.localId}
-                class={`card card-border bg-base-100 relative group ${d.type === 'delete' ? 'opacity-60' : 'cursor-pointer'}`}
+                class={`card card-border bg-base-100 relative group ${d.type !== 'delete' ? 'cursor-pointer' : ''}`}
                 onClick={() => d.type !== 'delete' && (setSelectedDraft(d), setView('edit-draft'))}
               >
                 <button
@@ -210,11 +210,7 @@ export default function EditList({ pierres }: Props) {
                 >
                   ×
                 </button>
-                {d.type === 'delete' ? (
-                  <figure class="flex aspect-[4/3] items-center justify-center bg-error/10">
-                    <span class="text-4xl">🗑</span>
-                  </figure>
-                ) : d.newPhotoNames[0] ? (
+                {d.newPhotoNames[0] ? (
                   <figure class="aspect-[4/3] overflow-hidden">
                     <img
                       src={`/api/drafts/${d.localId}/photos/${d.newPhotoNames[0]}`}
