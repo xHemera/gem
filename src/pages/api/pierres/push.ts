@@ -4,7 +4,7 @@ import { getDraftStore, slugify } from '../../../lib/drafts';
 import { commitFiles, readFileContent } from '../../../lib/github';
 
 export const POST: APIRoute = async () => {
-  const store = getDraftStore();
+  const store = await getDraftStore();
   const drafts = await store.list();
 
   if (drafts.length === 0) {

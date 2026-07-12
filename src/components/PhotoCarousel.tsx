@@ -39,8 +39,10 @@ export default function PhotoCarousel({ pierre, onClose, photoBaseUrl }: Props) 
               {photos.map((photo, i) => (
                 <div key={i} class={`carousel-item w-full ${i === index ? '' : 'hidden'}`}>
                   <img
-                    src={`${baseUrl}/${photo}`}
+                    src={`${baseUrl}/${photo}?nf_resize=fit&w=1200`}
                     alt={`${pierre.nom} - ${i + 1}`}
+                    loading={i === index ? 'eager' : 'lazy'}
+                    decoding="async"
                     class="w-full max-h-[60vh] object-contain"
                   />
                 </div>

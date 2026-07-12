@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getDraftStore } from '../../lib/drafts';
 
 export const GET: APIRoute = async () => {
-  const store = getDraftStore();
+  const store = await getDraftStore();
   const drafts = await store.list();
   const body = drafts.map((d) => ({
     localId: d.localId,

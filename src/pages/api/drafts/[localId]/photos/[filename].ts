@@ -14,7 +14,7 @@ export const GET: APIRoute = async ({ params }) => {
   const { localId, filename } = params;
   if (!localId || !filename) return new Response('Not found', { status: 404 });
 
-  const store = getDraftStore();
+  const store = await getDraftStore();
   const data = await store.getPhoto(localId, filename);
   if (!data) return new Response('Not found', { status: 404 });
 

@@ -194,6 +194,8 @@ export default function EditList({ pierres }: Props) {
                     <img
                       src={`/api/drafts/${d.localId}/photos/${d.newPhotoNames[0]}`}
                       alt={d.nom}
+                      loading="lazy"
+                      decoding="async"
                       class="h-full w-full object-cover"
                     />
                   </figure>
@@ -238,6 +240,8 @@ export default function EditList({ pierres }: Props) {
                     <img
                       src={`/images/pierres/${p.id}/${p.photos[0]}`}
                       alt={p.nom}
+                      loading="lazy"
+                      decoding="async"
                       class="h-full w-full object-cover"
                     />
                   </figure>

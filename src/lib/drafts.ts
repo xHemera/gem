@@ -79,8 +79,8 @@ function createLocalStore(): DraftStore {
   };
 }
 
-function createNetlifyStore(): DraftStore {
-  const { getStore } = require('@netlify/blobs');
+async function createNetlifyStore(): Promise<DraftStore> {
+  const { getStore } = await import('@netlify/blobs');
   const store = getStore('pierre-drafts');
 
   return {
@@ -130,9 +130,11 @@ function createNetlifyStore(): DraftStore {
 
 let _instance: DraftStore | null = null;
 
-export function getDraftStore(): DraftStore {
+export async function getDraftStore(): Promise<DraftStore> {
   if (!_instance) {
-    _instance = process.env.NETLIFY ? createNetlifyStore() : createLocalStore();
+    _instance = process.env.NETLIFY
+      ? await createNetlifyStore()
+      : createLocalStore();
   }
   return _instance;
 }

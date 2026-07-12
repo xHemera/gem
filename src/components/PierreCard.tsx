@@ -7,7 +7,9 @@ interface Props {
 
 export default function PierreCard({ pierre, onSelect }: Props) {
   const firstPhoto = pierre.photos?.[0];
-  const imgPath = firstPhoto ? `/images/pierres/${pierre.id}/${firstPhoto}` : null;
+  const imgPath = firstPhoto
+    ? `/images/pierres/${pierre.id}/${firstPhoto}?nf_resize=fit&w=400`
+    : null;
 
   return (
     <button onClick={() => onSelect(pierre)} class="card card-border bg-base-100 cursor-pointer text-left hover:shadow-xl transition-shadow">
@@ -16,6 +18,10 @@ export default function PierreCard({ pierre, onSelect }: Props) {
           <img
             src={imgPath}
             alt={pierre.nom}
+            loading="lazy"
+            decoding="async"
+            width="400"
+            height="300"
             class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </figure>

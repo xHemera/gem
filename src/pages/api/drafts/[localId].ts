@@ -5,7 +5,7 @@ export const GET: APIRoute = async ({ params }) => {
   const { localId } = params;
   if (!localId) return new Response('Missing id', { status: 400 });
 
-  const store = getDraftStore();
+  const store = await getDraftStore();
   const draft = await store.get(localId);
   if (!draft) return new Response('Not found', { status: 404 });
 
@@ -18,7 +18,7 @@ export const DELETE: APIRoute = async ({ params }) => {
   const { localId } = params;
   if (!localId) return new Response('Missing id', { status: 400 });
 
-  const store = getDraftStore();
+  const store = await getDraftStore();
   await store.delete(localId);
 
   return new Response(null, { status: 204 });

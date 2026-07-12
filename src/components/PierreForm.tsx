@@ -5,6 +5,46 @@ interface PhotoPreview {
   url: string;
 }
 
+const MAX_DIM = 1920;
+const JPEG_QUALITY = 0.8;
+
+function compressImage(file: File): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(img.src);
+      let { width, height } = img;
+      if (width > MAX_DIM || height > MAX_DIM) {
+        const ratio = Math.min(MAX_DIM / width, MAX_DIM / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const name = file.name.replace(/\.[^.]+$/, '.jpg');
+            resolve(new File([blob], name, { type: 'image/jpeg' }));
+          } else {
+            reject(new Error('Échec de la compression'));
+          }
+        },
+        'image/jpeg',
+        JPEG_QUALITY,
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(img.src);
+      reject(new Error('Impossible de charger l\'image'));
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 interface Props {
   initialData?: {
     localId?: string;
@@ -55,7 +95,10 @@ export default function PierreForm({ initialData, onSaved }: Props) {
 
     committedPhotos.forEach((name) => formData.append('committedPhotos', name));
     draftPhotos.forEach((name) => formData.append('draftPhotos', name));
-    newPhotoPreviews.forEach((p) => formData.append('photos', p.file));
+    for (const p of newPhotoPreviews) {
+      const compressed = await compressImage(p.file);
+      formData.append('photos', compressed);
+    }
 
     if (initialData?.localId) formData.append('localId', initialData.localId);
     if (initialData?.id) formData.append('id', initialData.id);
